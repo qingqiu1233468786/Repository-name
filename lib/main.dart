@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// ================= 启动页 =================
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
   @override
@@ -113,6 +114,7 @@ class _SplashPageState extends State<SplashPage> {
     );
   }
 }
+// ================= 主界面 =================
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -124,17 +126,18 @@ class _HomePageState extends State<HomePage> {
   late VideoPlayerController _videoCtrl;
   bool videoReady = false;
 
+  // 左侧菜单状态：0=程序主页，1=辅助
   int selectedMenu = 0;
-  final List<String> menuItems = [
-    "程序主页",
-    "内存功能",
-    "虚体传送",
-    "绘制参数",
-    "自瞄参数",
-    "隐藏窗口",
-    "退出程序",
-  ];
 
+  // 🎯 核心状态：是否进入"辅助"页面（控制开启按钮显示）
+  bool inAuxMenu = false;
+
+  // 🎯 核心状态：辅助悬浮窗是否开启（控制悬浮窗显示）
+  bool auxWindowOn = false;
+
+  final List<String> menuItems = ["程序主页", "辅助"];
+
+  // 参数变量
   double groundX = 0.000;
   double groundY = 0.000;
   double groundZ = 1.420;
@@ -177,6 +180,7 @@ class _HomePageState extends State<HomePage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
+          // 背景视频
           videoReady
               ? SizedBox.expand(
                   child: ClipRect(
@@ -194,151 +198,222 @@ class _HomePageState extends State<HomePage> {
                   ),
                 )
               : Container(color: Colors.black),
-
-          Positioned(
-            top: 10,
-            left: 20,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Text(
-                "自瞄调试参数",
-                style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-        Positioned.fill(
+        // ===== 左侧菜单 =====
+        Positioned(
           top: 50,
           left: 10,
-          right: 10,
           bottom: 10,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 110,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.55),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: Colors.white24),
-                ),
-                child: ListView.builder(
-                  padding: EdgeInsets.zero,
-                  itemCount: menuItems.length,
-                  itemBuilder: (context, index) {
-                    bool isSelected = selectedMenu == index;
-                    return GestureDetector(
-                      onTap: () => setState(() => selectedMenu = index),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-                        margin: const EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Colors.blue.withValues(alpha: 0.5)
-                              : Colors.white.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                        child: Center(
-                          child: Text(
-                            menuItems[index],
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
+          child: Container(
+            width: 110,
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.55),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: Colors.white24),
+            ),
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              itemCount: menuItems.length,
+              itemBuilder: (context, index) {
+                bool isSelected = selectedMenu == index;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectedMenu = index;
+                      if (index == 1) {
+                        // 进入"辅助"菜单
+                        inAuxMenu = true;
+                        auxWindowOn = false; // 默认悬浮窗关闭
+                      } else {
+                        inAuxMenu = false;
+                        auxWindowOn = false;
+                      }
+                    });
                   },
-                ),
-              ),
-
-              const SizedBox(width: 8),
-
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.55),
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: Row(
-                          children: [
-                            _buildTopButton("保存配置"),
-                            const SizedBox(width: 6),
-                            _buildTopButton("加载配置"),
-                          ],
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+                    margin: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Colors.blue.withValues(alpha: 0.5)
+                          : Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: Center(
+                      child: Text(
+                        menuItems[index],
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
-                      const Divider(color: Colors.white24, height: 1),
-                      Expanded(
-                        child: Scrollbar(
-                          thumbVisibility: true,
-                          thickness: 4,
-                          radius: const Radius.circular(4),
-                          child: SingleChildScrollView(
-                            physics: const BouncingScrollPhysics(),
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildSectionTitle("地面目标配置:"),
-                                _buildParamRow("左右偏移 (X)", groundX, (v) => setState(() => groundX = v)),
-                                _buildParamRow("前后偏移 (Y)", groundY, (v) => setState(() => groundY = v)),
-                                _buildParamRow("高度偏移 (Z)", groundZ, (v) => setState(() => groundZ = v)),
-                                _buildParamRow("水平预判系数", groundH, (v) => setState(() => groundH = v)),
-                                _buildParamRow("垂直预判系数", groundV, (v) => setState(() => groundV = v)),
-                                _buildParamRow("平滑系数", groundS, (v) => setState(() => groundS = v)),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
 
-                                const SizedBox(height: 8),
-                                _buildSectionTitle("空中目标配置:"),
-                                _buildParamRow("左右偏移 (X)", airX, (v) => setState(() => airX = v)),
-                                _buildParamRow("前后偏移 (Y)", airY, (v) => setState(() => airY = v)),
-                                _buildParamRow("高度偏移 (Z)", airZ, (v) => setState(() => airZ = v)),
-                                _buildParamRow("水平预判系数", airH, (v) => setState(() => airH = v)),
-                                _buildParamRow("垂直预判系数", airV, (v) => setState(() => airV = v)),
-                                _buildParamRow("平滑系数", airS, (v) => setState(() => airS = v)),
-
-                                const SizedBox(height: 8),
-                                _buildSectionTitle("通用配置:"),
-                                Row(
-                                  children: [
-                                    Checkbox(
-                                      value: enableSmooth,
-                                      onChanged: (v) => setState(() => enableSmooth = v ?? false),
-                                      activeColor: Colors.blueAccent,
-                                      side: const BorderSide(color: Colors.white54),
-                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    const Text("启用平滑", style: TextStyle(color: Colors.white, fontSize: 13)),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                              ],
-                            ),
-                          ),
-                        ),
+        // ===== 🎯 右侧中间的"开启"按钮（仅在辅助菜单时显示） =====
+        if (inAuxMenu && !auxWindowOn)
+          Positioned(
+            right: 20,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: GestureDetector(
+                onTap: () => setState(() => auxWindowOn = true),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(color: Colors.white, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withValues(alpha: 0.5),
+                        blurRadius: 12,
+                        spreadRadius: 2,
                       ),
                     ],
                   ),
+                  child: const Text(
+                    "开 启",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 4,
+                    ),
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+
+        // ===== 🎯 辅助悬浮窗（点"开启"后显示） =====
+        if (auxWindowOn) _buildAuxWindow(),
       ],
     ),
   );
 }
+  // ================= 辅助悬浮窗 UI =================
+  Widget _buildAuxWindow() {
+    return Positioned(
+      right: 20,
+      top: 30,
+      bottom: 30,
+      child: Container(
+        width: 420,
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.75),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: Colors.white24),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 标题栏（带关闭按钮）
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.3),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(6),
+                  topRight: Radius.circular(6),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "自瞄调试参数",
+                    style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
+                  GestureDetector(
+                    onTap: () => setState(() => auxWindowOn = false),
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: const Icon(Icons.close, color: Colors.white, size: 16),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // 顶部按钮
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  _buildTopButton("保存配置"),
+                  const SizedBox(width: 8),
+                  _buildTopButton("加载配置"),
+                ],
+              ),
+            ),
+            const Divider(color: Colors.white24, height: 1),
+
+            // 参数滚动区
+            Expanded(
+              child: Scrollbar(
+                thumbVisibility: true,
+                thickness: 4,
+                radius: const Radius.circular(4),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionTitle("地面目标配置:"),
+                      _buildParamRow("左右偏移 (X)", groundX, (v) => setState(() => groundX = v)),
+                      _buildParamRow("前后偏移 (Y)", groundY, (v) => setState(() => groundY = v)),
+                      _buildParamRow("高度偏移 (Z)", groundZ, (v) => setState(() => groundZ = v)),
+                      _buildParamRow("水平预判系数", groundH, (v) => setState(() => groundH = v)),
+                      _buildParamRow("垂直预判系数", groundV, (v) => setState(() => groundV = v)),
+                      _buildParamRow("平滑系数", groundS, (v) => setState(() => groundS = v)),
+
+                      const SizedBox(height: 10),
+                      _buildSectionTitle("空中目标配置:"),
+                      _buildParamRow("左右偏移 (X)", airX, (v) => setState(() => airX = v)),
+                      _buildParamRow("前后偏移 (Y)", airY, (v) => setState(() => airY = v)),
+                      _buildParamRow("高度偏移 (Z)", airZ, (v) => setState(() => airZ = v)),
+                      _buildParamRow("水平预判系数", airH, (v) => setState(() => airH = v)),
+                      _buildParamRow("垂直预判系数", airV, (v) => setState(() => airV = v)),
+                      _buildParamRow("平滑系数", airS, (v) => setState(() => airS = v)),
+
+                      const SizedBox(height: 10),
+                      _buildSectionTitle("通用配置:"),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: enableSmooth,
+                            onChanged: (v) => setState(() => enableSmooth = v ?? false),
+                            activeColor: Colors.blueAccent,
+                            side: const BorderSide(color: Colors.white54),
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          const Text("启用平滑", style: TextStyle(color: Colors.white, fontSize: 13)),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTopButton(String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -383,7 +458,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           _buildMiniBtn(Icons.add, () => onChanged((value + 0.001).clamp(0.0, 3.0))),
-          const SizedBox(width: 6),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               label,

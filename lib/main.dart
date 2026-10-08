@@ -95,10 +95,9 @@ class _SplashPageState extends State<SplashPage> {
             alignment: const Alignment(0, 0.6),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black.withOpacity(0.4),
+                backgroundColor: Colors.black.withValues(alpha: 0.4),
                 foregroundColor: Colors.white,
-                padding: const
-EdgeInsets.symmetric(horizontal: 40, vertical: 18),
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                   side: const BorderSide(color: Colors.white, width: 2),
@@ -108,8 +107,7 @@ EdgeInsets.symmetric(horizontal: 40, vertical: 18),
               onPressed: videoReady ? gotoHome : null,
               child: const Text(
                 "进 入",
-                style: TextStyle(fontSize: 22,
-letterSpacing: 6, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 22, letterSpacing: 6, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -118,7 +116,6 @@ letterSpacing: 6, fontWeight: FontWeight.bold),
     );
   }
 }
-
 // ================= 主界面 =================
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -151,7 +148,7 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.black.withOpacity(0.5),
+        backgroundColor: Colors.black.withValues(alpha: 0.5),
         title: Text(text, style: const TextStyle(color: Colors.white)),
         actions: [
           TextButton(
@@ -185,20 +182,19 @@ class _HomePageState extends State<HomePage> {
           }
         },
         child: Container(
-          padding: const
-EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
           decoration: BoxDecoration(
             color: isSelected
-                ? Colors.white.withOpacity(0.25)
-                : Colors.black.withOpacity(0.25),
+                ? Colors.white.withValues(alpha: 0.25)
+                : Colors.black.withValues(alpha: 0.25),
             borderRadius: BorderRadius.circular(30),
             border: Border.all(
-              color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+              color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.6),
               width: isSelected ? 2.0 : 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 6,
                 offset: const Offset(0, 3),
               ),
@@ -227,7 +223,7 @@ EdgeInsets.symmetric(vertical: 12, horizontal: 10),
         width: 280,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6),
+          color: Colors.black.withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.white24),
         ),
@@ -271,13 +267,17 @@ EdgeInsets.symmetric(vertical: 12, horizontal: 10),
               Row(
                 children: [
                   const Text("自瞄圈半径:", style: TextStyle(color: Colors.white70, fontSize: 12)),
-                  Expanded(child: Slider(value: 245, min: 0, max: 500, activeColor: Colors.blueAccent, onChanged: (v) {})),
+                  Expanded(
+                    child: Slider(value: 245, min: 0, max: 500, activeColor: Colors.blueAccent, onChanged: (v) {}),
+                  ),
                 ],
               ),
               Row(
                 children: [
                   const Text("最大自瞄距离(米):", style: TextStyle(color: Colors.white70, fontSize: 12)),
-                  Expanded(child: Slider(value: 85, min: 0, max: 200, activeColor: Colors.blueAccent, onChanged: (v) {})),
+                  Expanded(
+                    child: Slider(value: 85, min: 0, max: 200, activeColor: Colors.blueAccent, onChanged: (v) {}),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
@@ -286,12 +286,18 @@ EdgeInsets.symmetric(vertical: 12, horizontal: 10),
                 children: [
                   ElevatedButton(
                     onPressed: () {},
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey.withOpacity(0.8), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueGrey.withValues(alpha: 0.8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    ),
                     child: const Text("保存配置", style: TextStyle(fontSize: 12)),
                   ),
                   ElevatedButton(
                     onPressed: () {},
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey.withOpacity(0.8), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueGrey.withValues(alpha: 0.8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    ),
                     child: const Text("加载配置", style: TextStyle(fontSize: 12)),
                   ),
                 ],
@@ -302,7 +308,6 @@ EdgeInsets.symmetric(vertical: 12, horizontal: 10),
       ),
     );
   }
-
   Widget _buildSliderRow(String label, double value) {
     return Row(
       children: [
@@ -388,10 +393,10 @@ EdgeInsets.symmetric(vertical: 12, horizontal: 10),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -404,6 +409,7 @@ EdgeInsets.symmetric(vertical: 12, horizontal: 10),
               ),
             ],
           ),
+
           if (showAuxWindow) _buildAuxiliaryWindow(),
         ],
       ),

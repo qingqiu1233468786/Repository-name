@@ -90,7 +90,7 @@ class _SplashPageState extends State<SplashPage> {
           Center(
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black.withValues(alpha: 0.6),
+                backgroundColor: Colors.black.withOpacity(0.6), // 3.24.5 兼容写法
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
                 shape: RoundedRectangleBorder(
@@ -143,7 +143,7 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.black.withValues(alpha: 0.75),
+        backgroundColor: Colors.black.withOpacity(0.75), // 兼容写法
         title: Text(text, style: const TextStyle(color: Colors.white)),
         actions: [
           TextButton(
@@ -185,13 +185,13 @@ class _HomePageState extends State<HomePage> {
               SizedBox(
                 width: 180,
                 child: Container(
-                  color: Colors.black.withValues(alpha: 0.32),
+                  color: Colors.black.withOpacity(0.32), // 兼容写法
                   child: ListView(
                     padding: EdgeInsets.zero,
                     children: [
                       Container(
                         padding: const EdgeInsets.all(16),
-                        color: const Color(0xff2040aa).withValues(alpha: 0.4),
+                        color: const Color(0xff2040aa).withOpacity(0.4), // 兼容写法
                         child: const Text(
                           "三清",
                           style: TextStyle(color: Colors.white, fontSize: 22),
@@ -226,8 +226,8 @@ class _HomePageState extends State<HomePage> {
                         selected: selectedIndex == 3,
                         onTap: () {
                           setState(() => selectedIndex = 3);
-                          showMsg("已选择功能4"); 
-                       },
+                          showMsg("已选择功能4");
+                         },
                       ),
                     ],
                   ),
@@ -238,7 +238,7 @@ class _HomePageState extends State<HomePage> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.25),
+                      color: Colors.black.withOpacity(0.25),
                     ),
                     child: const Text(
                       "主内容区",
@@ -254,4 +254,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-```

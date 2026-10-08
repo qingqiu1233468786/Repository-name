@@ -13,14 +13,17 @@ jobs:
 
       - name: List current directory files
         run: ls -la
-      
+
       - name: Print pubspec content
         run: cat pubspec.yaml
 
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.7.12'
+
+      - name: Accept Android SDK licenses
+        run: yes | flutter doctor --android-licenses
 
       - name: Fetch dependencies
         run: |

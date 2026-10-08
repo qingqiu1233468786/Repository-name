@@ -1,13 +1,38 @@
-name: myapp
-description: A new Flutter project.
-version: 1.0.0+1
+name: Build Flutter APK
 
-environment:
-  sdk: '>=3.0.0 <4.0.0'
+on:
+  push:
+    branches: [ main ]
 
-dependencies:
-  flutter:
-    sdk: flutter
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-flutter:
-  uses-material-design: true
+      - name: List current directory files
+        run: ls -la
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+
+      - name: Fetch dependencies
+        run: |
+          export PUB_HOSTED_URL=https://pub.flutter-io.cn
+          export FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
+          flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload built APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk

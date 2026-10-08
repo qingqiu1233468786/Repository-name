@@ -4,8 +4,8 @@
     cp -r lib new_app/
     cp pubspec.yaml new_app/
     if [ -d assets ]; then cp -r assets new_app/; fi
-    # 复制你提前写好的安卓res资源（图标、样式xml）
-    cp -r android/app/src/main/res new_app/android/app/src/main/
+    # 存在res目录才复制安卓资源，不存在不报错
+    if [ -d android/app/src/main/res ]; then cp -r android/app/src/main/res new_app/android/app/src/main/; fi
     cd new_app
     flutter pub get
     flutter build apk --release

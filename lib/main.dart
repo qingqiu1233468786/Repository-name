@@ -90,7 +90,7 @@ class _SplashPageState extends State<SplashPage> {
           Center(
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black.withOpacity(0.6), // 3.24.5 兼容写法
+                backgroundColor: Colors.black.withOpacity(0.4), // 降低透明度，不这么黑
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
                 shape: RoundedRectangleBorder(
@@ -143,7 +143,7 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.black.withOpacity(0.75), // 兼容写法
+        backgroundColor: Colors.black.withOpacity(0.5), // 弹窗也不要太黑
         title: Text(text, style: const TextStyle(color: Colors.white)),
         actions: [
           TextButton(
@@ -161,12 +161,62 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  // 定义一个胶囊按钮构建方法
+  Widget _buildCapsuleItem(String title, int index, {bool isTitle = false}) {
+    bool isSelected = selectedIndex == index;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
+      child: GestureDetector(
+        onTap: () {
+          if (!isTitle) {
+            setState(() => selectedIndex = index);
+            showMsg("已选择$title");
+          }
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+          decoration: BoxDecoration(
+            // 🎯 核心：半透明黑色背景 + 白色边框，透明度大幅降低，不会挡住视频
+            color: isSelected
+                ? Colors.white.withOpacity(0.25) // 选中时稍微亮一点
+                : Colors.black.withOpacity(0.25), // 未选中时也保持轻盈
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: isSelected
+                  ? Colors.white
+                  : Colors.white.withOpacity(0.6),
+              width: isSelected ? 2.0 : 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: isTitle ? 22 : 18,
+              fontWeight: isTitle ? FontWeight.bold : FontWeight.normal,
+              letterSpacing: isTitle ? 4 : 2,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
         children: [
+          // 底层视频
           videoReady
               ? SizedBox.expand(
                   child: FittedBox(
@@ -180,69 +230,38 @@ class _HomePageState extends State<HomePage> {
                 )
               : Container(color: Colors.black),
 
+          // 侧边栏（移除了大黑底，变成独立的胶囊按钮组）
           Row(
             children: [
               SizedBox(
                 width: 180,
-                child: Container(
-                  color: Colors.black.withOpacity(0.32), // 兼容写法
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        color: const Color(0xff2040aa).withOpacity(0.4), // 兼容写法
-                        child: const Text(
-                          "三清",
-                          style: TextStyle(color: Colors.white, fontSize: 22),
-                        ),
-                      ),
-                      ListTile(
-                        title: const Text("功能1", style: TextStyle(color: Colors.white)),
-                        selected: selectedIndex == 0,
-                        onTap: () {
-                          setState(() => selectedIndex = 0);
-                          showMsg("已选择功能1");
-                        },
-                      ),
-                      ListTile(
-                        title: const Text("功能2", style: TextStyle(color: Colors.white)),
-                        selected: selectedIndex == 1,
-                        onTap: () {
-                          setState(() => selectedIndex = 1);
-                          showMsg("已选择功能2");
-                        },
-                      ),
-                      ListTile(
-                        title: const Text("功能3", style: TextStyle(color: Colors.white)),
-                        selected: selectedIndex == 2,
-                        onTap: () {
-                          setState(() => selectedIndex = 2);
-                          showMsg("已选择功能3");
-                        },
-                      ),
-                      ListTile(
-                        title: const Text("功能4", style: TextStyle(color: Colors.white)),
-                        selected: selectedIndex == 3,
-                        onTap: () {
-                          setState(() => selectedIndex = 3);
-                          showMsg("已选择功能4");
-                         },
-                      ),
-                    ],
-                  ),
+                child: ListView(
+                  padding: const EdgeInsets.only(top: 40), // 顶部留点空间
+                  children: [
+                    _buildCapsuleItem("三清", 0, isTitle: true),
+                    const SizedBox(height: 10), // 标题和功能之间隔开一点
+                    _buildCapsuleItem("功能1", 1),
+                    _buildCapsuleItem("功能2", 2),
+                    _buildCapsuleItem("功能3", 3),
+                    _buildCapsuleItem("功能4", 4),
+                  ],
                 ),
               ),
               Expanded(
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.25),
+                      color: Colors.black.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1,
+                      ),
                     ),
                     child: const Text(
                       "主内容区",
-                      style: TextStyle(color: Colors.white, fontSize: 24),
+                      style: TextStyle(color: Colors.white, fontSize: 24, letterSpacing: 2),
                     ),
                   ),
                 ),

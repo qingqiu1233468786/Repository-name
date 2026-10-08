@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 // ================= 启动页 =================
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -167,80 +168,83 @@ class _HomePageState extends State<HomePage> {
     await _videoCtrl.play();
     if (mounted) setState(() => videoReady = true);
   }
+// ========== 游戏进程检测函数（带3秒超时） ==========
+Future<Map<String, dynamic>> checkGameProcess() async {
+  final String targetPkg = "com.pi.czrxdfirst";
+  try {
+    // ✅ 修复点 1：Process.run 的标准写法，第一个参数是命令，第二个参数是参数列表
+    final result = await Process.run(
+      "su",
+      ["-c", "pgrep -f $targetPkg"],
+    ).timeout(const Duration(seconds: 3));
 
-  // ========== 新增：游戏进程检测函数（带3秒超时） ==========
-  Future<Map<String, dynamic>> checkGameProcess() async {
-    final String targetPkg = "com.pi.czrxdfirst";
-    try {
-      final result = await Process.run(
-        ["su", "-c", "pgrep -f $targetPkg"],
-      ).timeout(const Duration(seconds: 3));
-
-      if (result.exitCode == 0) {
-        String output = result.stdout.toString().trim();
-        if (output.isNotEmpty) {
-          return {"ok": true, "msg": "✅检测到游戏进程，PID：\n$output"};
-        } else {
-          return {"ok": false, "msg": "❌未找到游戏进程，请先打开游戏"};
-        }
+    if (result.exitCode == 0) {
+      String output = result.stdout.toString().trim();
+      if (output.isNotEmpty) {
+        return {"ok": true, "msg": "✅检测到游戏进程，PID：\n$output"};
       } else {
-        return {"ok": false, "msg": "❌Root授权失败，请在Magisk允许本软件"};
+        return {"ok": false, "msg": "❌未找到游戏进程，请先打开游戏"};
       }
-    } catch (e) {
-      return {"ok": false, "msg": "❌执行超时/异常：$e"};
+    } else {
+      return {"ok": false, "msg": "❌Root授权失败，请在Magisk允许本软件"};
     }
+  } catch (e) {
+    return {"ok": false, "msg": "❌执行超时/异常：$e"};
   }
+}
 
-  // ========== 新增：弹窗调用检测 ==========
-  Future<void> showGameCheckDialog() async {
-    var res = await checkGameProcess();
-    if (mounted) {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: Colors.black.withValues(alpha: 0.8),
-          title: const Text("进程检测", style: TextStyle(color: Colors.white)),
-          content: Text(res["msg"], style: const TextStyle(color: Colors.white)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text("关闭", style: TextStyle(color: Colors.white)),
-            )
-          ],
-        ),
-      );
-    }
+// ========== 弹窗调用检测 ==========
+Future<void> showGameCheckDialog() async {
+  var res = await checkGameProcess();
+  if (mounted) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.black.withValues(alpha: 0.8),
+        title: const Text("进程检测", style: TextStyle(color: Colors.white)),
+        content: Text(res["msg"], style: const TextStyle(color: Colors.white)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("关闭", style: TextStyle(color: Colors.white)),
+          )
+        ],
+      ),
+    );
   }
+}
 
-  @override
-  void dispose() {
-    _videoCtrl.dispose();
-    super.dispose();
-  }
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // 背景视频
-          videoReady
-              ? SizedBox.expand(
-                  child: ClipRect(
-                    child: Transform.scale(
-                      scale: 1.08,
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: _videoCtrl.value.size.width,
-                          height: _videoCtrl.value.size.height,
-                          child: VideoPlayer(_videoCtrl),
-                        ),
+@override
+void dispose() {
+  _videoCtrl.dispose();
+  super.dispose();
+}
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: Stack(
+      fit: StackFit.expand,
+      children: [
+        // 背景视频
+        videoReady
+            ? SizedBox.expand(
+                child: ClipRect(
+                  child: Transform.scale(
+                    scale: 1.08,
+                    child: FittedBox(
+                      fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: _videoCtrl.value.size.width,
+                        height: _videoCtrl.value.size.height,
+                        child: VideoPlayer(_videoCtrl),
                       ),
                     ),
                   ),
-                )
-              : Container(color: Colors.black),
+                ),
+              )
+            : Container(color: Colors.black),
+
         // ===== 左侧菜单 =====
         Positioned(
           top: 50,
@@ -263,16 +267,14 @@ class _HomePageState extends State<HomePage> {
                     setState(() {
                       selectedMenu = index;
                       if (index == 1) {
-                        // 进入"辅助"菜单
                         inAuxMenu = true;
-                        auxWindowOn = false; // 默认悬浮窗关闭
+                        auxWindowOn = false;
                       } else {
                         inAuxMenu = false;
                         auxWindowOn = false;
                       }
                     });
-                    // 点击【进程检测】直接执行检测弹窗
-                    if(index == 2){
+                    if (index == 2) {
                       await showGameCheckDialog();
                     }
                   },
@@ -301,7 +303,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-
         // ===== 🎯 右侧中间的"开启"按钮（仅在辅助菜单时显示） =====
         if (inAuxMenu && !auxWindowOn)
           Positioned(
@@ -342,56 +343,57 @@ class _HomePageState extends State<HomePage> {
         // ===== 🎯 辅助悬浮窗（点"开启"后显示） =====
         if (auxWindowOn) _buildAuxWindow(),
       ],
-    );
-  }
-  // ================= 辅助悬浮窗 UI =================
-  Widget _buildAuxWindow() {
-    return Positioned(
-      right: 20,
-      top: 30,
-      bottom: 30,
-      child: Container(
-        width: 420,
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.75),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: Colors.white24),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 标题栏（带关闭按钮）
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.3),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(6),
-                  topRight: Radius.circular(6),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "自瞄调试参数",
-                    style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-                  ),
-                  GestureDetector(
-                    onTap: () => setState(() => auxWindowOn = false),
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: const Icon(Icons.close, color: Colors.white, size: 16),
-                    ),
-                  ),
-                ],
+    ), // ✅ 修复点 2：这里补上了 Stack 的右括号
+  );
+}
+
+// ================= 辅助悬浮窗 UI =================
+Widget _buildAuxWindow() {
+  return Positioned(
+    right: 20,
+    top: 30,
+    bottom: 30,
+    child: Container(
+      width: 420,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.75),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 标题栏（带关闭按钮）
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.3),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(6),
+                topRight: Radius.circular(6),
               ),
             ),
-
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "自瞄调试参数",
+                  style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+                GestureDetector(
+                  onTap: () => setState(() => auxWindowOn = false),
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: const Icon(Icons.close, color: Colors.white, size: 16),
+                  ),
+                ),
+              ],
+            ),
+          ),
             // 顶部按钮
             Padding(
               padding: const EdgeInsets.all(8),
@@ -459,6 +461,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
   Widget _buildTopButton(String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

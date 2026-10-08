@@ -1,33 +1,228 @@
-name: Build Android APK
-on:
-  push:
-    branches: [ main ]
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:video_player/video_player.dart';
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: 检出代码
-        uses: actions/checkout@v4
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // 🔒 游戏固定横屏，只允许左右横向，禁止竖屏
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
+  // 🎮 沉浸式全屏，隐藏状态栏、导航栏（游戏模式）
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  runApp(const MyApp());
+}
 
-      - name: 设置Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.7.12'
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-      - name: 创建全新Flutter项目并打包
-        run: |
-          flutter create -t app new_app
-          cp -r lib new_app/
-          cp pubspec.yaml new_app/
-          if [ -d assets ]; then cp -r assets new_app/; fi
-          if [ -d android/app/src/main/res ]; then cp -r android/app/src/main/res new_app/android/app/src/main/; fi
-          cd new_app
-          flutter pub get
-          flutter build apk --release
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: '三清',
+      theme: ThemeData.dark(),
+      debugShowCheckedModeBanner: false,
+      home: const SplashPage(),
+    );
+  }
+}
 
-      - name: 上传APK安装包
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release安装包
-          path: new_app/build/app/outputs/apk/release/app-release.apk
+// 启动页：转圈加载
+class SplashPage extends StatefulWidget {
+  const SplashPage({super.key});
+
+  @override
+  State<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends State<SplashPage> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) gotoHome();
+    });
+  }
+
+  void gotoHome() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (ctx) => const HomePage()),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: GestureDetector(
+        onTap: gotoHome,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: RadialGradient(
+              colors: [Color(0xff2040aa), Color(0xffbb6020), Colors.black],
+              center: Alignment.bottomLeft,
+              radius: 1.4,
+            ),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Text(
+                  "三清",
+                  style: TextStyle(color: Colors.white, fontSize: 18, letterSpacing: 2),
+                ),
+                SizedBox(height: 10),
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text("加载中", style: TextStyle(color: Colors.white70, fontSize: 12)),
+                SizedBox(height: 4),
+                Text("作者：三清", style: TextStyle(color: Colors.white70, fontSize: 12)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// 主页：背景视频/图片 + 半透明UI
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late VideoPlayerController _videoCtrl;
+  bool videoDone = false;
+  int selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _videoCtrl = VideoPlayerController.asset("assets/bg.mp4");
+    _initVideo();
+  }
+
+  Future<void> _initVideo() async {
+    await _videoCtrl.initialize();
+    setState(() {});
+    _videoCtrl.play();
+    _videoCtrl.addListener(() {
+      if (_videoCtrl.value.position >= _videoCtrl.value.duration && !videoDone) {
+        setState(() => videoDone = true);
+      }
+    });
+  }
+
+  void showMsg(String text) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.black.withOpacity(0.75), //弹窗半透明
+        title: Text(text, style: const TextStyle(color: Colors.white)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("关闭"))
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _videoCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          //底层背景
+          videoDone
+              ? Image.asset("assets/bg_end.png", fit: BoxFit.cover)
+              : VideoPlayer(_videoCtrl),
+
+          //半透明侧边菜单
+          Row(
+            children: [
+              SizedBox(
+                width: 180,
+                child: Container(
+                  color: Colors.black.withOpacity(0.32), //侧边栏半透明
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        color: const Color(0xff2040aa).withOpacity(0.4),
+                        child: const Text("三清", style: TextStyle(color: Colors.white, fontSize: 22)),
+                      ),
+                      ListTile(
+                        title: const Text("功能1", style: TextStyle(color: Colors.white)),
+                        selected: selectedIndex == 0,
+                        onTap: () {
+                          setState(() => selectedIndex = 0);
+                          showMsg("已选择功能1");
+                        },
+                      ),
+                      ListTile(
+                        title: const Text("功能2", style: TextStyle(color: Colors.white)),
+                        selected: selectedIndex == 1,
+                        onTap: () {
+                          setState(() => selectedIndex = 1);
+                          showMsg("已选择功能2");
+                        },
+                      ),
+                      ListTile(
+                        title: const Text("功能3", style: TextStyle(color: Colors.white)),
+                        selected: selectedIndex == 2,
+                        onTap: () {
+                          setState(() => selectedIndex = 2);
+                          showMsg("已选择功能3");
+                        },
+                      ),
+                      ListTile(
+                        title: const Text("功能4", style: TextStyle(color: Colors.white)),
+                        selected: selectedIndex == 3,
+                        onTap: () {
+                          setState(() => selectedIndex = 3);
+                          showMsg("已选择功能4");
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.25)),
+                    child: const Text(
+                      "主内容区",
+                      style: TextStyle(color: Colors.white, fontSize: 24),
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

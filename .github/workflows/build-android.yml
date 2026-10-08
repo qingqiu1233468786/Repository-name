@@ -13,7 +13,7 @@ jobs:
       - name: 设置Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.7.12'
+          flutter-version: '3.16.0'
 
       - name: 创建全新Flutter项目并打包
         run: |

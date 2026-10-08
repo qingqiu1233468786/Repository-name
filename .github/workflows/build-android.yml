@@ -29,8 +29,12 @@ jobs:
       - name: 云端自动重建 Android 骨架文件
         run: flutter create . --platforms=android
 
-      - name: 禁用新版 Gradle DSL 检查以兼容构建
-        run: echo "android.newDsl=false" >> android/gradle.properties
+      # ========== 强制降级 Android Gradle 插件 ==========
+      - name: 强制降级 Gradle 插件版本 (破解 newDsl 报错)
+        run: |
+          sed -i 's/id "com.android.application" version ".*"/id "com.android.application" version "8.2.1"/g' android/settings.gradle
+          sed -i 's/id "org.jetbrains.kotlin.android" version ".*"/id "org.jetbrains.kotlin.android" version "1.9.22"/g' android/settings.gradle
+      # ==========================================================================
 
       - name: 获取依赖
         run: flutter pub get

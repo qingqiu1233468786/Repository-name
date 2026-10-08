@@ -26,9 +26,13 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: 自动补全 Android 目录（核心步骤）
+      - name: 自动补全 Android 目录并修改 SDK 版本
         run: |
           flutter create --platforms=android --org com.sanqing --project-name sanqing .
+          sed -i 's/compileSdkVersion .*/compileSdkVersion 34/g' android/app/build.gradle
+          sed -i 's/compileSdk .*/compileSdk 34/g' android/app/build.gradle
+          sed -i 's/targetSdkVersion .*/targetSdkVersion 34/g' android/app/build.gradle
+          sed -i 's/targetSdk .*/targetSdk 34/g' android/app/build.gradle
 
       - name: 获取依赖
         run: flutter pub get

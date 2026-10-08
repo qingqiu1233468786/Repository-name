@@ -1,3 +1,36 @@
+name: Build Android APK
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+
+      - name: 创建全新Flutter项目并打包
+        run: |
+          flutter create -t app new_app
+          cp -r lib new_app/
+          cp pubspec.yaml new_app/
+          if [ -d assets ]; then cp -r assets new_app/; fi
+          if [ -d android/app/src/main/res ]; then cp -r android/app/src/main/res new_app/android/app/src/main/; fi
+          cd new_app
+          flutter pub get
+          flutter build apk --release
+
+      - name: 上传APK安装包
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release安装包
+          path: new_app/build/app/outputs/apk/release/app-release.apk
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
@@ -104,41 +137,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  VideoPlayerController? _videoCtrl;
+  late VideoPlayerController _videoCtrl;
   bool videoDone = false;
   int selectedIndex = 0;
-  bool videoAvailable = true;
 
   @override
   void initState() {
     super.initState();
-    try {
-      _videoCtrl = VideoPlayerController.asset("assets/bg.mp4");
-      _initVideo();
-    } catch (_) {
-      setState(() {
-        videoAvailable = false;
-        videoDone = true;
-      });
-    }
+    _videoCtrl = VideoPlayerController.asset("assets/bg.mp4");
+    _initVideo();
   }
 
   Future<void> _initVideo() async {
-    try {
-      await _videoCtrl!.initialize();
-      setState(() {});
-      _videoCtrl!.play();
-      _videoCtrl!.addListener(() {
-        if (_videoCtrl!.value.position >= _videoCtrl!.value.duration && !videoDone) {
-          setState(() => videoDone = true);
-        }
-      });
-    } catch (_) {
-      setState(() {
-        videoAvailable = false;
-        videoDone = true;
-      });
-    }
+    await _videoCtrl.initialize();
+    setState(() {});
+    _videoCtrl.play();
+    _videoCtrl.addListener(() {
+      if (_videoCtrl.value.position >= _videoCtrl.value.duration && !videoDone) {
+        setState(() => videoDone = true);
+      }
+    });
   }
 
   void showMsg(String text) {
@@ -156,9 +174,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    if(_videoCtrl != null){
-      _videoCtrl!.dispose();
-    }
+    _videoCtrl.dispose();
     super.dispose();
   }
 
@@ -169,12 +185,9 @@ class _HomePageState extends State<HomePage> {
         fit: StackFit.expand,
         children: [
           //底层背景
-          if(videoAvailable)
-            videoDone
-                ? Image.asset("assets/bg_end.png", fit: BoxFit.cover)
-                : VideoPlayer(_videoCtrl!)
-          else
-            const SizedBox(),
+          videoDone
+              ? Image.asset("assets/bg_end.png", fit: BoxFit.cover)
+              : VideoPlayer(_videoCtrl),
 
           //半透明侧边菜单
           Row(
@@ -234,4 +247,16 @@ class _HomePageState extends State<HomePage> {
                     decoration: BoxDecoration(color: Colors.black.withOpacity(0.25)),
                     child: const Text(
                       "主内容区",
-                      style: TextStyle(color: Colors.whit
+                      style: TextStyle(color: Colors.white, fontSize: 24),
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+

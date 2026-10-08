@@ -19,15 +19,15 @@ jobs:
           distribution: 'zulu'
           java-version: '21'
 
-      - name: 设置最新版 Flutter
+      - name: 设置 Flutter 3.47.6（固定版本，和报错日志保持一致）
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          flutter-version: '3.47.6'
           cache: true
 
-      - name: 自动补全 Android 目录并强制修改 SDK 版本与挖孔屏适配
+      - name: 修改SDK版本 + 挖孔屏适配（移除flutter create，不再重生成android文件夹）
         run: |
-          flutter create --platforms=android --org com.sanqing --project-name sanqing .
           find android/ -name "build.gradle*" -exec sed -i 's/compileSdk = .*/compileSdk = 36/g' {} \;
           find android/ -name "build.gradle*" -exec sed -i 's/compileSdkVersion .*/compileSdkVersion 36/g' {} \;
           find android/ -name "build.gradle*" -exec sed -i 's/targetSdk = .*/targetSdk = 36/g' {} \;

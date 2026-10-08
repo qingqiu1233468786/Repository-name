@@ -4,12 +4,12 @@ import 'package:video_player/video_player.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // 🔒 固定横屏
+  // 🔒 游戏固定横屏，只允许左右横向
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
-  // 🎮 沉浸式全屏
+  // 🎮 沉浸式全屏，隐藏状态栏、导航栏
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(const MyApp());
 }
@@ -49,7 +49,7 @@ class _SplashPageState extends State<SplashPage> {
 
   Future<void> _initVideo() async {
     await _videoCtrl.initialize();
-    _videoCtrl.setLooping(true); // 启动页也循环播放
+    _videoCtrl.setLooping(true); // 启动页视频循环播放
     await _videoCtrl.play();
     if (mounted) setState(() => videoReady = true);
   }
@@ -61,7 +61,7 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void gotoHome() {
-    _videoCtrl.pause(); // 跳转前暂停视频，节省资源
+    _videoCtrl.pause(); // 跳转前暂停，节省性能
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (ctx) => const HomePage()),
@@ -74,7 +74,7 @@ class _SplashPageState extends State<SplashPage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // 背景视频（铺满屏幕）
+          // 背景视频（自适应铺满全屏）
           videoReady
               ? SizedBox.expand(
                   child: FittedBox(
@@ -88,7 +88,7 @@ class _SplashPageState extends State<SplashPage> {
                 )
               : Container(color: Colors.black),
 
-          // 居中显示的“进入”按钮
+          // 居中的“进入”按钮
           Center(
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -101,7 +101,7 @@ class _SplashPageState extends State<SplashPage> {
                 ),
                 elevation: 10,
               ),
-              onPressed: videoReady ? gotoHome : null, // 视频加载好才能点
+              onPressed: videoReady ? gotoHome : null, // 视频加载好才能点，防闪退
               child: const Text(
                 "进 入",
                 style: TextStyle(fontSize: 22, letterSpacing: 6, fontWeight: FontWeight.bold),
@@ -169,7 +169,7 @@ class _HomePageState extends State<HomePage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // 底层视频背景
+          // 底层视频背景（自适应铺满）
           videoReady
               ? SizedBox.expand(
                   child: FittedBox(
@@ -230,4 +230,31 @@ class _HomePageState extends State<HomePage> {
                         selected: selectedIndex == 3,
                         onTap: () {
                           setState(() => selectedIndex = 3);
-      
+                          showMsg("已选择功能4");
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.25),
+                    ),
+                    child: const Text(
+                      "主内容区",
+                      style: TextStyle(color: Colors.white, fontSize: 24),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

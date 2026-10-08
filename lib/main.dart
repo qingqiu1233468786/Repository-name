@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
+import 'dart:io';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,31 +35,39 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-  late VideoPlayerController _videoCtrl;
+  VideoPlayerController? _videoCtrl;
   bool videoReady = false;
 
   @override
   void initState() {
     super.initState();
-    _videoCtrl = VideoPlayerController.asset("assets/bg.mp4");
-    _initVideo();
+    try {
+      _videoCtrl = VideoPlayerController.asset("assets/bg.mp4");
+      _initVideo();
+    } catch (_) {
+      setState(() => videoReady = true);
+    }
   }
 
   Future<void> _initVideo() async {
-    await _videoCtrl.initialize();
-    _videoCtrl.setLooping(true);
-    await _videoCtrl.play();
-    if (mounted) setState(() => videoReady = true);
+    try {
+      await _videoCtrl!.initialize();
+      _videoCtrl!.setLooping(true);
+      await _videoCtrl!.play();
+      if (mounted) setState(() => videoReady = true);
+    } catch (_) {
+      if (mounted) setState(() => videoReady = true);
+    }
   }
 
   @override
   void dispose() {
-    _videoCtrl.dispose();
+    if (_videoCtrl != null) _videoCtrl!.dispose();
     super.dispose();
   }
 
   void gotoHome() {
-    _videoCtrl.pause();
+    if(_videoCtrl != null) _videoCtrl!.pause();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (ctx) => const HomePage()),
@@ -71,23 +80,24 @@ class _SplashPageState extends State<SplashPage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          videoReady
-              ? SizedBox.expand(
-                  child: ClipRect(
-                    child: Transform.scale(
-                      scale: 1.08,
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: _videoCtrl.value.size.width,
-                          height: _videoCtrl.value.size.height,
-                          child: VideoPlayer(_videoCtrl),
-                        ),
-                      ),
+          if(_videoCtrl != null && videoReady)
+            SizedBox.expand(
+              child: ClipRect(
+                child: Transform.scale(
+                  scale: 1.08,
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                      width: _videoCtrl!.value.size.width,
+                      height: _videoCtrl!.value.size.height,
+                      child: VideoPlayer(_videoCtrl!),
                     ),
                   ),
-                )
-              : Container(color: Colors.black),
+                ),
+              ),
+            )
+          else
+            Container(color: Colors.black),
 
           Align(
             alignment: const Alignment(0, 0.6),
@@ -123,10 +133,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late VideoPlayerController _videoCtrl;
+  VideoPlayerController? _videoCtrl;
   bool videoReady = false;
 
-  // 左侧菜单状态：0=程序主页，1=辅助
+  // 左侧菜单状态：0=程序主页，1=辅助，2=进程信息
   int selectedMenu = 0;
 
   // 🎯 核心状态：是否进入"辅助"页面（控制开启按钮显示）
@@ -135,7 +145,7 @@ class _HomePageState extends State<HomePage> {
   // 🎯 核心状态：辅助悬浮窗是否开启（控制悬浮窗显示）
   bool auxWindowOn = false;
 
-  final List<String> menuItems = ["程序主页", "辅助"];
+  final List<String> menuItems = ["程序主页", "辅助", "进程信息"];
 
   // 参数变量
   double groundX = 0.000;
@@ -157,23 +167,82 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _videoCtrl = VideoPlayerController.asset("assets/bg.mp4");
-    _initVideo();
+    try {
+      _videoCtrl = VideoPlayerController.asset("assets/bg.mp4");
+      _initVideo();
+    } catch (_) {
+      setState(() => videoReady = true);
+    }
   }
 
   Future<void> _initVideo() async {
-    await _videoCtrl.initialize();
-    _videoCtrl.setLooping(true);
-    await _videoCtrl.play();
-    if (mounted) setState(() => videoReady = true);
+    try {
+      await _videoCtrl!.initialize();
+      _videoCtrl!.setLooping(true);
+      await _videoCtrl!.play();
+      if (mounted) setState(() => videoReady = true);
+    } catch (_) {
+      if (mounted) setState(() => videoReady = true);
+    }
+  }
+
+  // 读取自身进程信息
+  Future<Map<String, String>> readSelfProcStatus() async {
+    final Map<String, String> result = {};
+    try {
+      final file = File("/proc/self/status");
+      final content = await file.readAsString();
+      final lines = content.split("\n");
+      for (var line in lines) {
+        final sp = line.split(":");
+        if (sp.length >=2) {
+          String key = sp[0].trim();
+          String val = sp.sublist(1).join(":").trim();
+          result[key] = val;
+        }
+      }
+      // 读取cmdline获取包名
+      final cmdFile = File("/proc/self/cmdline");
+      String cmdRaw = await cmdFile.readAsString();
+      List<String> cmdList = cmdRaw.split('\x00');
+      result["package"] = cmdList.isNotEmpty ? cmdList.first : "unknown";
+    } catch(e) {
+      result["error"] = e.toString();
+    }
+    return result;
+  }
+
+  void showProcInfo() async {
+    final info = await readSelfProcStatus();
+    String pid = pid.toString();
+    String text = """
+PID: $pid
+包名: ${info["package"] ?? "N/A"}
+进程名: ${info["Name"] ?? "N/A"}
+内存VmRSS: ${info["VmRSS"] ?? "N/A"}
+线程数: ${info["Threads"] ?? "N/A"}
+进程状态: ${info["State"] ?? "N/A"}
+""";
+    if(mounted){
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: Colors.black.withOpacity(0.75),
+          title: const Text("自身进程信息",style: TextStyle(color: Colors.white)),
+          content: Text(text,style: const TextStyle(color: Colors.white)),
+          actions: [
+            TextButton(onPressed: ()=>Navigator.pop(ctx), child: const Text("关闭"))
+          ],
+        ),
+      );
+    }
   }
 
   @override
   void dispose() {
-    _videoCtrl.dispose();
+    if(_videoCtrl != null) _videoCtrl!.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -181,23 +250,24 @@ class _HomePageState extends State<HomePage> {
         fit: StackFit.expand,
         children: [
           // 背景视频
-          videoReady
-              ? SizedBox.expand(
-                  child: ClipRect(
-                    child: Transform.scale(
-                      scale: 1.08,
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: _videoCtrl.value.size.width,
-                          height: _videoCtrl.value.size.height,
-                          child: VideoPlayer(_videoCtrl),
-                        ),
-                      ),
+          if(_videoCtrl != null && videoReady)
+            SizedBox.expand(
+              child: ClipRect(
+                child: Transform.scale(
+                  scale: 1.08,
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                      width: _videoCtrl!.value.size.width,
+                      height: _videoCtrl!.value.size.height,
+                      child: VideoPlayer(_videoCtrl!),
                     ),
                   ),
-                )
-              : Container(color: Colors.black),
+                ),
+              ),
+            )
+          else
+            Container(color: Colors.black),
         // ===== 左侧菜单 =====
         Positioned(
           top: 50,
@@ -223,6 +293,11 @@ class _HomePageState extends State<HomePage> {
                         // 进入"辅助"菜单
                         inAuxMenu = true;
                         auxWindowOn = false; // 默认悬浮窗关闭
+                      } else if(index == 2){
+                        // 进程信息，直接弹窗
+                        inAuxMenu = false;
+                        auxWindowOn = false;
+                        showProcInfo();
                       } else {
                         inAuxMenu = false;
                         auxWindowOn = false;
@@ -295,9 +370,8 @@ class _HomePageState extends State<HomePage> {
         // ===== 🎯 辅助悬浮窗（点"开启"后显示） =====
         if (auxWindowOn) _buildAuxWindow(),
       ],
-    ),
-  );
-}
+    );
+  }
   // ================= 辅助悬浮窗 UI =================
   Widget _buildAuxWindow() {
     return Positioned(
@@ -413,7 +487,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
   Widget _buildTopButton(String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

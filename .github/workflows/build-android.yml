@@ -26,15 +26,6 @@ jobs:
           flutter-version: '3.47.6'
           cache: true
 
-      - name: 生成Android目录 + 修改SDK版本 + 挖孔适配
-        run: |
-          flutter create --platforms=android --org com.pi --project-name czrxdfirst .
-          find android/ -name "build.gradle*" -exec sed -i 's/compileSdk = .*/compileSdk = 36/g' {} \;
-          find android/ -name "build.gradle*" -exec sed -i 's/compileSdkVersion .*/compileSdkVersion 36/g' {} \;
-          find android/ -name "build.gradle*" -exec sed -i 's/targetSdk = .*/targetSdk = 36/g' {} \;
-          find android/ -name "build.gradle*" -exec sed -i 's/targetSdkVersion .*/targetSdkVersion 36/g' {} \;
-          sed -i 's/<application /<application android:windowLayoutInDisplayCutoutMode="shortEdges" /g' android/app/src/main/AndroidManifest.xml
-
       - name: 获取依赖
         run: flutter pub get
 

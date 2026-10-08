@@ -26,7 +26,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// ================= 启动页 =================
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
   @override
@@ -116,8 +115,6 @@ class _SplashPageState extends State<SplashPage> {
     );
   }
 }
-
-// ================= 主界面 =================
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -129,9 +126,7 @@ class _HomePageState extends State<HomePage> {
   late VideoPlayerController _videoCtrl;
   bool videoReady = false;
   int selectedIndex = 0;
-
-  // 🎯 新增：控制辅助悬浮窗是否显示
-  bool showAuxWindow = false;
+  bool showAuxWindow = false; 
 
   @override
   void initState() {
@@ -169,7 +164,6 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  // 胶囊按钮
   Widget _buildCapsuleItem(String title, int index, {bool isTitle = false}) {
     bool isSelected = selectedIndex == index;
     return Padding(
@@ -179,7 +173,6 @@ class _HomePageState extends State<HomePage> {
           if (!isTitle) {
             setState(() {
               selectedIndex = index;
-              // 如果点击的是“辅助”（索引1），则开启悬浮窗
               if (index == 1) {
                 showAuxWindow = !showAuxWindow;
               }
@@ -219,203 +212,181 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  // 🎯 辅助悬浮窗 UI 构建
-  Widget _buildAuxiliaryWindow() {
-    return Positioned(
-      right: 100,
-      top: 50,
-      child: Container(
-        width: 280,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white24),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 标题栏
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("辅助配置", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        GestureDetector(
-                          onTap: () => setState(() => showAuxWindow = false),
-                          child: const Icon(Icons.close, color: Colors.white, size: 18),
-                        ),
-                      ],
-                    ),
-                    const Divider(color: Colors.white30),
-
-                    // 地面目标配置
-                    const Text("地面目标配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
-                    _buildSliderRow("左右偏移 (X)", 0.0),
-                    _buildSliderRow("前后偏移 (Y)", 0.0),
-                    _buildSliderRow("高度偏移 (Z)", 1.684),
-                    _buildSliderRow("水平预判", 0.144),
-                    _buildSliderRow("垂直预判", 0.100),
-                    _buildSliderRow("平滑系数", 0.500),
-
-                    const SizedBox(height: 10),
-                    // 空中目标配置
-                    const Text("空中目标配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
-                    _buildSliderRow("左右偏移 (X)", 0.0),
-                    _buildSliderRow("前后偏移 (Y)", 0.0),
-                    _buildSliderRow("高度偏移 (Z)", 1.763),
-                    _buildSliderRow("水平预判", 0.144),
-                    _buildSliderRow("垂直预判", 0.263),
-                    _buildSliderRow("平滑系数", 0.500),
-
-                    const SizedBox(height: 10),
-                    // 通用配置
-                    const Text("通用配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
-                    _buildCheckbox("启用平滑", true),
-                    _buildCheckbox("持枪时触发", true),
-                    _buildCheckbox("过滤队友", true),
-                    _buildCheckbox("显示自瞄圈圈", true),
-
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Text("自瞄圈半径:", style: TextStyle(color: Colors.white70, fontSize: 12)),
-                        Expanded(
-                          child: Slider(
-                            value: 245, min: 0, max: 500,
-                            activeColor: Colors.blueAccent,
-                            onChanged: (v) {},
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        const Text("最大自瞄距离(米):", style: TextStyle(color: Colors.white70, fontSize: 12)),
-                        Expanded(
-                          child: Slider(
-                            value: 85, min: 0, max: 200,
-                            activeColor: Colors.blueAccent,
-                            onChanged: (v) {},
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 10),
-                    // 底部按钮
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blueGrey.withOpacity(0.8),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          ),
-                          child: const Text("保存配置", style: TextStyle(fontSize: 12)),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blueGrey.withOpacity(0.8),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          ),
-                          child: const Text("加载配置", style: TextStyle(fontSize: 12)),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
-
-        // 辅助的 Slider 行
-        Widget _buildSliderRow(String label, double value) {
-          return Row(
-            children: [
-              SizedBox(
-                width: 80,
-                child: Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
-              ),
-              Expanded(
-                child: Slider(
-                  value: value, min: 0.0, max: 2.0,
-                  activeColor: Colors.blueAccent,
-                  inactiveColor: Colors.white24,
-                  onChanged: (v) {},
-                ),
-              ),
-              SizedBox(
-                width: 30,
-                child: Text(value.toStringAsFixed(3), style: const TextStyle(color: Colors.white, fontSize: 10)),
-              ),
-            ],
-          );
-        }
-
-        // 辅助的 Checkbox 行
-        Widget _buildCheckbox(String label, bool value) {
-          return Row(
-            children: [
-              Checkbox(
-                value: value,
-                onChanged: (v) {},
-                activeColor: Colors.blueAccent,
-                checkColor: Colors.white,
-                side: const BorderSide(color: Colors.white54),
-              ),
-              Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
-            ],
-          );
-        }
-
-        @override
-        Widget build(BuildContext context) {
-          return Scaffold(
-            body: Stack(
-              fit: StackFit.expand,
+Widget _buildAuxiliaryWindow() {
+  return Positioned(
+    right: 100,
+    top: 50,
+    child: Container(
+      width: 280,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white24),
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // 背景视频
-                videoReady
-                    ? SizedBox.expand(
-                        child: ClipRect(
-                          child: Transform.scale(
-                            scale: 1.08,
-                            filterQuality: FilterQuality.high,
-                            child: FittedBox(
-                              fit: BoxFit.cover,
-                              filterQuality: FilterQuality.high,
-                              child: SizedBox(
-                                width: _videoCtrl.value.size.width,
-                                height: _videoCtrl.value.size.height,
-                                child: VideoPlayer(_videoCtrl),
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                    : Container(color: Colors.black),
+                const Text("辅助配置", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                GestureDetector(
+                  onTap: () => setState(() => showAuxWindow = false),
+                  child: const Icon(Icons.close, color: Colors.white, size: 18),
+                ),
+              ],
+            ),
+            const Divider(color: Colors.white30),
 
-                // 侧边栏
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 180,
-                      child: ListView(
-                        padding: const EdgeInsets.only(top: 40),
-                        children: [
-                          _buildCapsuleItem("三清", 0, isTitle: true),
-                          const SizedBox(height: 10),
-                          _buildCapsuleItem("辅助", 1), // 这里改成了“辅助”
-                          _buildCapsuleItem("功能2", 2),
-                          _buildCapsuleItem("功能3", 3),
-                          _buildCapsuleItem("功能4", 4),
-                    ],
+            const Text("地面目标配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
+            _buildSliderRow("左右偏移 (X)", 0.0),
+            _buildSliderRow("前后偏移 (Y)", 0.0),
+            _buildSliderRow("高度偏移 (Z)", 1.684),
+            _buildSliderRow("水平预判", 0.144),
+            _buildSliderRow("垂直预判", 0.100),
+            _buildSliderRow("平滑系数", 0.500),
+
+            const SizedBox(height: 10),
+            const Text("空中目标配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
+            _buildSliderRow("左右偏移 (X)", 0.0),
+            _buildSliderRow("前后偏移 (Y)", 0.0),
+            _buildSliderRow("高度偏移 (Z)", 1.763),
+            _buildSliderRow("水平预判", 0.144),
+            _buildSliderRow("垂直预判", 0.263),
+            _buildSliderRow("平滑系数", 0.500),
+
+            const SizedBox(height: 10),
+            const Text("通用配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
+            _buildCheckbox("启用平滑", true),
+            _buildCheckbox("持枪时触发", true),
+            _buildCheckbox("过滤队友", true),
+            _buildCheckbox("显示自瞄圈圈", true),
+
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Text("自瞄圈半径:", style: TextStyle(color: Colors.white70, fontSize: 12)),
+                Expanded(
+                  child: Slider(value: 245, min: 0, max: 500, activeColor: Colors.blueAccent, onChanged: (v) {}),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Text("最大自瞄距离(米):", style: TextStyle(color: Colors.white70, fontSize: 12)),
+                Expanded(
+                  child: Slider(value: 85, min: 0, max: 200, activeColor: Colors.blueAccent, onChanged: (v) {}),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueGrey.withOpacity(0.8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   ),
+                  child: const Text("保存配置", style: TextStyle(fontSize: 12)),
+                ),
+                ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueGrey.withOpacity(0.8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  ),
+                  child: const Text("加载配置", style: TextStyle(fontSize: 12)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+Widget _buildSliderRow(String label, double value) {
+  return Row(
+    children: [
+      SizedBox(
+        width: 80,
+        child: Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+      ),
+      Expanded(
+        child: Slider(
+          value: value, min: 0.0, max: 2.0,
+          activeColor: Colors.blueAccent,
+          inactiveColor: Colors.white24,
+          onChanged: (v) {},
+        ),
+      ),
+      SizedBox(
+        width: 30,
+        child: Text(value.toStringAsFixed(3), style: const TextStyle(color: Colors.white, fontSize: 10)),
+      ),
+    ],
+  );
+}
+
+Widget _buildCheckbox(String label, bool value) {
+  return Row(
+    children: [
+      Checkbox(
+        value: value,
+        onChanged: (v) {},
+        activeColor: Colors.blueAccent,
+        checkColor: Colors.white,
+        side: const BorderSide(color: Colors.white54),
+      ),
+      Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
+    ],
+  );
+}
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          videoReady
+              ? SizedBox.expand(
+                  child: ClipRect(
+                    child: Transform.scale(
+                      scale: 1.08,
+                      filterQuality: FilterQuality.high,
+                      child: FittedBox(
+                        fit: BoxFit.cover,
+                        filterQuality: FilterQuality.high,
+                        child: SizedBox(
+                          width: _videoCtrl.value.size.width,
+                          height: _videoCtrl.value.size.height,
+                          child: VideoPlayer(_videoCtrl),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              : Container(color: Colors.black),
+
+          Row(
+            children: [
+              SizedBox(
+                width: 180,
+                child: ListView(
+                  padding: const EdgeInsets.only(top: 40),
+                  children: [
+                    _buildCapsuleItem("三清", 0, isTitle: true),
+                    const SizedBox(height: 10),
+                    _buildCapsuleItem("辅助", 1),
+                    _buildCapsuleItem("功能2", 2),
+                    _buildCapsuleItem("功能3", 3),
+                    _buildCapsuleItem("功能4", 4),
+                  ],
                 ),
               ),
               Expanded(
@@ -440,149 +411,9 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
 
-          // 🎯 悬浮窗 UI（当 showAuxWindow 为 true 时显示）
           if (showAuxWindow) _buildAuxiliaryWindow(),
         ],
       ),
     );
   }
-
-  // 🎯 辅助悬浮窗 UI 构建
-  Widget _buildAuxiliaryWindow() {
-    return Positioned(
-      right: 100,
-      top: 50,
-      child: Container(
-        width: 280,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white24),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("辅助配置", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  GestureDetector(
-                    onTap: () => setState(() => showAuxWindow = false),
-                    child: const Icon(Icons.close, color: Colors.white, size: 18),
-                  ),
-                ],
-              ),
-              const Divider(color: Colors.white30),
-
-              const Text("地面目标配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
-              _buildSliderRow("左右偏移 (X)", 0.0),
-              _buildSliderRow("前后偏移 (Y)", 0.0),
-              _buildSliderRow("高度偏移 (Z)", 1.684),
-              _buildSliderRow("水平预判", 0.144),
-              _buildSliderRow("垂直预判", 0.100),
-              _buildSliderRow("平滑系数", 0.500),
-
-              const SizedBox(height: 10),
-              const Text("空中目标配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
-              _buildSliderRow("左右偏移 (X)", 0.0),
-              _buildSliderRow("前后偏移 (Y)", 0.0),
-              _buildSliderRow("高度偏移 (Z)", 1.763),
-              _buildSliderRow("水平预判", 0.144),
-              _buildSliderRow("垂直预判", 0.263),
-              _buildSliderRow("平滑系数", 0.500),
-
-              const SizedBox(height: 10),
-              const Text("通用配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
-              _buildCheckbox("启用平滑", true),
-              _buildCheckbox("持枪时触发", true),
-              _buildCheckbox("过滤队友", true),
-              _buildCheckbox("显示自瞄圈圈", true),
-
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Text("自瞄圈半径:", style: TextStyle(color: Colors.white70, fontSize: 12)),
-                  Expanded(
-                    child: Slider(value: 245, min: 0, max: 500, activeColor: Colors.blueAccent, onChanged: (v) {}),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  const Text("最大自瞄距离(米):", style: TextStyle(color: Colors.white70, fontSize: 12)),
-                  Expanded(
-                    child: Slider(value: 85, min: 0, max: 200, activeColor: Colors.blueAccent, onChanged: (v) {}),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueGrey.withOpacity(0.8),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    ),
-                    child: const Text("保存配置", style: TextStyle(fontSize: 12)),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueGrey.withOpacity(0.8),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    ),
-                    child: const Text("加载配置", style: TextStyle(fontSize: 12)),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSliderRow(String label, double value) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 80,
-          child: Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
-        ),
-        Expanded(
-          child: Slider(
-            value: value, min: 0.0, max: 2.0,
-            activeColor: Colors.blueAccent,
-            inactiveColor: Colors.white24,
-            onChanged: (v) {},
-          ),
-        ),
-        SizedBox(
-          width: 30,
-          child: Text(value.toStringAsFixed(3), style: const TextStyle(color: Colors.white, fontSize: 10)),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCheckbox(String label, bool value) {
-    return Row(
-      children: [
-        Checkbox(
-          value: value,
-          onChanged: (v) {},
-          activeColor: Colors.blueAccent,
-          checkColor: Colors.white,
-          side: const BorderSide(color: Colors.white54),
-        ),
-        Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
-      ],
-    );
-  }
 }
-        

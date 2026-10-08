@@ -1,5 +1,5 @@
 name: sanqing
-description: 三清工具
+description: 三清
 version: 1.0.0+1
 
 environment:
@@ -11,6 +11,6 @@ dependencies:
   video_player: ^2.8.5
 
 flutter:
+  uses-material-design: true
   assets:
     - assets/bg.mp4
-    - assets/bg_end.png

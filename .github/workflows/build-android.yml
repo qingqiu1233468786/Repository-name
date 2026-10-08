@@ -13,7 +13,7 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 设置 Java
+      - name: 设置 Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
@@ -26,13 +26,17 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: 自动补全 Android 目录（核心步骤）
+        run: |
+          flutter create --platforms=android --org com.sanqing --project-name sanqing .
+
       - name: 获取依赖
         run: flutter pub get
 
       - name: 构建 Release APK
         run: flutter build apk --release
 
-      - name: 上传APK
+      - name: 上传 APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release

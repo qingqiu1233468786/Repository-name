@@ -4,12 +4,12 @@ import 'package:video_player/video_player.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // 🔒 游戏固定横屏，只允许左右横向，禁止竖屏
+  // 🔒 固定横屏
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
-  // 🎮 沉浸式全屏，隐藏状态栏、导航栏（游戏模式）
+  // 🎮 沉浸式全屏
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(const MyApp());
 }
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// 启动页：转圈加载
+// ================= 启动页 =================
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -37,15 +37,31 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
+  late VideoPlayerController _videoCtrl;
+  bool videoReady = false;
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) gotoHome();
-    });
+    _videoCtrl = VideoPlayerController.asset("assets/bg.mp4");
+    _initVideo();
+  }
+
+  Future<void> _initVideo() async {
+    await _videoCtrl.initialize();
+    _videoCtrl.setLooping(true); // 启动页也循环播放
+    await _videoCtrl.play();
+    if (mounted) setState(() => videoReady = true);
+  }
+
+  @override
+  void dispose() {
+    _videoCtrl.dispose();
+    super.dispose();
   }
 
   void gotoHome() {
+    _videoCtrl.pause(); // 跳转前暂停视频，节省资源
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (ctx) => const HomePage()),
@@ -55,47 +71,50 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GestureDetector(
-        onTap: gotoHome,
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: RadialGradient(
-              colors: [Color(0xff2040aa), Color(0xffbb6020), Colors.black],
-              center: Alignment.bottomLeft,
-              radius: 1.4,
-            ),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text(
-                  "三清",
-                  style: TextStyle(color: Colors.white, fontSize: 18, letterSpacing: 2),
-                ),
-                SizedBox(height: 10),
-                SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 背景视频（铺满屏幕）
+          videoReady
+              ? SizedBox.expand(
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                      width: _videoCtrl.value.size.width,
+                      height: _videoCtrl.value.size.height,
+                      child: VideoPlayer(_videoCtrl),
+                    ),
                   ),
+                )
+              : Container(color: Colors.black),
+
+          // 居中显示的“进入”按钮
+          Center(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black.withValues(alpha: 0.6),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  side: const BorderSide(color: Colors.white, width: 2),
                 ),
-                SizedBox(height: 8),
-                Text("加载中", style: TextStyle(color: Colors.white70, fontSize: 12)),
-                SizedBox(height: 4),
-                Text("作者：三清", style: TextStyle(color: Colors.white70, fontSize: 12)),
-              ],
+                elevation: 10,
+              ),
+              onPressed: videoReady ? gotoHome : null, // 视频加载好才能点
+              child: const Text(
+                "进 入",
+                style: TextStyle(fontSize: 22, letterSpacing: 6, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
-// 主页：背景视频/图片 + 半透明UI
+// ================= 主界面 =================
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -105,7 +124,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late VideoPlayerController _videoCtrl;
-  bool videoDone = false;
+  bool videoReady = false;
   int selectedIndex = 0;
 
   @override
@@ -117,23 +136,22 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _initVideo() async {
     await _videoCtrl.initialize();
-    setState(() {});
-    _videoCtrl.play();
-    _videoCtrl.addListener(() {
-      if (_videoCtrl.value.position >= _videoCtrl.value.duration && !videoDone) {
-        setState(() => videoDone = true);
-      }
-    });
+    _videoCtrl.setLooping(true); // 🎯 核心：主界面视频无限循环播放
+    await _videoCtrl.play();
+    if (mounted) setState(() => videoReady = true);
   }
 
   void showMsg(String text) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.black.withOpacity(0.75), //弹窗半透明
+        backgroundColor: Colors.black.withValues(alpha: 0.75),
         title: Text(text, style: const TextStyle(color: Colors.white)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("关闭"))
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("关闭"),
+          ),
         ],
       ),
     );
@@ -151,25 +169,37 @@ class _HomePageState extends State<HomePage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          //底层背景
-          videoDone
-              ? Image.asset("assets/bg_end.png", fit: BoxFit.cover)
-              : VideoPlayer(_videoCtrl),
+          // 底层视频背景
+          videoReady
+              ? SizedBox.expand(
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                      width: _videoCtrl.value.size.width,
+                      height: _videoCtrl.value.size.height,
+                      child: VideoPlayer(_videoCtrl),
+                    ),
+                  ),
+                )
+              : Container(color: Colors.black),
 
-          //半透明侧边菜单
+          // 半透明侧边菜单
           Row(
             children: [
               SizedBox(
                 width: 180,
                 child: Container(
-                  color: Colors.black.withOpacity(0.32), //侧边栏半透明
+                  color: Colors.black.withValues(alpha: 0.32),
                   child: ListView(
                     padding: EdgeInsets.zero,
                     children: [
                       Container(
                         padding: const EdgeInsets.all(16),
-                        color: const Color(0xff2040aa).withOpacity(0.4),
-                        child: const Text("三清", style: TextStyle(color: Colors.white, fontSize: 22)),
+                        color: const Color(0xff2040aa).withValues(alpha: 0.4),
+                        child: const Text(
+                          "三清",
+                          style: TextStyle(color: Colors.white, fontSize: 22),
+                        ),
                       ),
                       ListTile(
                         title: const Text("功能1", style: TextStyle(color: Colors.white)),
@@ -200,29 +230,4 @@ class _HomePageState extends State<HomePage> {
                         selected: selectedIndex == 3,
                         onTap: () {
                           setState(() => selectedIndex = 3);
-                          showMsg("已选择功能4");
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.25)),
-                    child: const Text(
-                      "主内容区",
-                      style: TextStyle(color: Colors.white, fontSize: 24),
-                    ),
-                  ),
-                ),
-              )
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
+      

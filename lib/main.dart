@@ -76,10 +76,8 @@ class _SplashPageState extends State<SplashPage> {
                   child: ClipRect(
                     child: Transform.scale(
                       scale: 1.08,
-                      filterQuality: FilterQuality.high,
                       child: FittedBox(
                         fit: BoxFit.cover,
-                        filterQuality: FilterQuality.high,
                         child: SizedBox(
                           width: _videoCtrl.value.size.width,
                           height: _videoCtrl.value.size.height,
@@ -357,10 +355,8 @@ class _HomePageState extends State<HomePage> {
                   child: ClipRect(
                     child: Transform.scale(
                       scale: 1.08,
-                      filterQuality: FilterQuality.high,
                       child: FittedBox(
                         fit: BoxFit.cover,
-                        filterQuality: FilterQuality.high,
                         child: SizedBox(
                           width: _videoCtrl.value.size.width,
                           height: _videoCtrl.value.size.height,

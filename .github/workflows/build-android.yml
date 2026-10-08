@@ -19,18 +19,17 @@ jobs:
           distribution: 'zulu'
           java-version: '21'
 
-      - name: 设置 Flutter 3.32.4
+      - name: 设置最新版 Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.4'
-          channel: 'stable'
+          channel: 'stable'    # 直接使用最新稳定版
           cache: true
 
       - name: 自动补全 Android 目录并修改 SDK 版本
         run: |
           flutter create --platforms=android --org com.sanqing --project-name sanqing .
           
-          # 兼容新版 Flutter 生成的 gradle 和 gradle.kts 文件
+          # 兼容旧版 .gradle 文件
           if [ -f android/app/build.gradle ]; then
             sed -i 's/compileSdkVersion .*/compileSdkVersion 34/g' android/app/build.gradle
             sed -i 's/compileSdk .*/compileSdk 34/g' android/app/build.gradle
@@ -38,12 +37,13 @@ jobs:
             sed -i 's/targetSdk .*/targetSdk 34/g' android/app/build.gradle
           fi
           
+          # 兼容新版 .gradle.kts 文件（新版 Flutter 默认生成这个）
           if [ -f android/app/build.gradle.kts ]; then
             sed -i 's/compileSdk = .*/compileSdk = 34/g' android/app/build.gradle.kts
             sed -i 's/targetSdk = .*/targetSdk = 34/g' android/app/build.gradle.kts
           fi
           
-          # 挖孔屏适配
+          # 适配挖孔屏
           sed -i 's/<application /<application android:windowLayoutInDisplayCutoutMode="shortEdges" /g' android/app/src/main/AndroidManifest.xml
 
       - name: 获取依赖

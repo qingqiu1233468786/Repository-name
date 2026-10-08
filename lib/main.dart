@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:video_player/video_player.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // 锁定横屏
+  // 🔒 游戏固定横屏，只允许左右横向，禁止竖屏
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
+  // 🎮 沉浸式全屏，隐藏状态栏、导航栏（游戏模式）
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(const MyApp());
 }
 
@@ -25,7 +28,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// ========== 启动页：分两段动画 ==========
+// 启动页：转圈加载
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -33,57 +36,27 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _lineOpacity;
-  late Animation<double> _colorOpacity;
-  bool stage1 = true; // true=转圈加载阶段；false=图片渐变阶段
-
+class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3), // 图片渐变时长
-    );
-
-    _lineOpacity = Tween<double>(begin: 1, end: 0).animate(
-      CurvedAnimation(parent: _ctrl, curve: const Interval(0.6, 1, curve: Curves.easeOut)),
-    );
-    _colorOpacity = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _ctrl, curve: const Interval(0.6, 1, curve: Curves.easeOut)),
-    );
-
-    // 【第一阶段：等待3秒转圈加载】
     Future.delayed(const Duration(seconds: 3), () {
-      setState(() {
-        stage1 = false; // 切换到第二阶段图片渐变
-      });
-      _ctrl.forward(); // 启动图片渐变动画
-    });
-
-    // 图片渐变动画完成，跳转主页
-    _ctrl.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => const HomePage()));
-      }
+      if (mounted) gotoHome();
     });
   }
 
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
+  void gotoHome() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (ctx) => const HomePage()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: GestureDetector(
-        onTap: () {
-          // 任意点击直接跳过所有动画，进入主界面
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (ctx) => const HomePage()));
-        },
+        onTap: gotoHome,
         child: Container(
           decoration: const BoxDecoration(
             gradient: RadialGradient(
@@ -92,64 +65,29 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
               radius: 1.4,
             ),
           ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // 第二阶段才显示两张图片
-              if (!stage1) ...[
-                FadeTransition(
-                  opacity: _colorOpacity,
-                  child: Image.asset(
-                    "assets/original.png",
-                    fit: BoxFit.cover,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Text(
+                  "三清",
+                  style: TextStyle(color: Colors.white, fontSize: 18, letterSpacing: 2),
+                ),
+                SizedBox(height: 10),
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
                   ),
                 ),
-                FadeTransition(
-                  opacity: _lineOpacity,
-                  child: Image.asset(
-                    "assets/line.png",
-                    fit: BoxFit.cover,
-                  ),
-                ),
+                SizedBox(height: 8),
+                Text("加载中", style: TextStyle(color: Colors.white70, fontSize: 12)),
+                SizedBox(height: 4),
+                Text("作者：三清", style: TextStyle(color: Colors.white70, fontSize: 12)),
               ],
-
-              // 第一阶段：转圈加载UI
-              Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "三清",
-                      style: TextStyle(color: Colors.white, fontSize: 18, letterSpacing: 2),
-                    ),
-                    const SizedBox(height: 10),
-                    const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    if(stage1)
-                    const Column(
-                      children: [
-                        Text(
-                          "加载中",
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
-                        ),
-                        SizedBox(height:4),
-                        Text(
-                          "作者：三清",
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -157,7 +95,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   }
 }
 
-// ========== 主界面：左侧侧边栏 ==========
+// 主页：背景视频/图片 + 半透明UI
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -166,13 +104,33 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late VideoPlayerController _videoCtrl;
+  bool videoDone = false;
   int selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _videoCtrl = VideoPlayerController.asset("assets/bg.mp4");
+    _initVideo();
+  }
+
+  Future<void> _initVideo() async {
+    await _videoCtrl.initialize();
+    setState(() {});
+    _videoCtrl.play();
+    _videoCtrl.addListener(() {
+      if (_videoCtrl.value.position >= _videoCtrl.value.duration && !videoDone) {
+        setState(() => videoDone = true);
+      }
+    });
+  }
 
   void showMsg(String text) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.grey[900],
+        backgroundColor: Colors.black.withOpacity(0.75), //弹窗半透明
         title: Text(text, style: const TextStyle(color: Colors.white)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("关闭"))
@@ -182,69 +140,89 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void dispose() {
+    _videoCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
+      body: Stack(
+        fit: StackFit.expand,
         children: [
-          // 左侧侧边栏
-          SizedBox(
-            width: 180,
-            child: Drawer(
-              elevation: 2,
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  const DrawerHeader(
-                    decoration: BoxDecoration(color: Color(0xff2040aa)),
-                    child: Text("三清", style: TextStyle(color: Colors.white, fontSize: 22)),
+          //底层背景
+          videoDone
+              ? Image.asset("assets/bg_end.png", fit: BoxFit.cover)
+              : VideoPlayer(_videoCtrl),
+
+          //半透明侧边菜单
+          Row(
+            children: [
+              SizedBox(
+                width: 180,
+                child: Container(
+                  color: Colors.black.withOpacity(0.32), //侧边栏半透明
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        color: const Color(0xff2040aa).withOpacity(0.4),
+                        child: const Text("三清", style: TextStyle(color: Colors.white, fontSize: 22)),
+                      ),
+                      ListTile(
+                        title: const Text("功能1", style: TextStyle(color: Colors.white)),
+                        selected: selectedIndex == 0,
+                        onTap: () {
+                          setState(() => selectedIndex = 0);
+                          showMsg("已选择功能1");
+                        },
+                      ),
+                      ListTile(
+                        title: const Text("功能2", style: TextStyle(color: Colors.white)),
+                        selected: selectedIndex == 1,
+                        onTap: () {
+                          setState(() => selectedIndex = 1);
+                          showMsg("已选择功能2");
+                        },
+                      ),
+                      ListTile(
+                        title: const Text("功能3", style: TextStyle(color: Colors.white)),
+                        selected: selectedIndex == 2,
+                        onTap: () {
+                          setState(() => selectedIndex = 2);
+                          showMsg("已选择功能3");
+                        },
+                      ),
+                      ListTile(
+                        title: const Text("功能4", style: TextStyle(color: Colors.white)),
+                        selected: selectedIndex == 3,
+                        onTap: () {
+                          setState(() => selectedIndex = 3);
+                          showMsg("已选择功能4");
+                        },
+                      ),
+                    ],
                   ),
-                  ListTile(
-                    title: const Text("功能1"),
-                    selected: selectedIndex == 0,
-                    onTap: () {
-                      setState(() => selectedIndex = 0);
-                      showMsg("已选择功能1");
-                    },
-                  ),
-                  ListTile(
-                    title: const Text("功能2"),
-                    selected: selectedIndex == 1,
-                    onTap: () {
-                      setState(() => selectedIndex = 1);
-                      showMsg("已选择功能2");
-                    },
-                  ),
-                  ListTile(
-                    title: const Text("功能3"),
-                    selected: selectedIndex == 2,
-                    onTap: () {
-                      setState(() => selectedIndex = 2);
-                      showMsg("已选择功能3");
-                    },
-                  ),
-                  ListTile(
-                    title: const Text("功能4"),
-                    selected: selectedIndex == 3,
-                    onTap: () {
-                      setState(() => selectedIndex = 3);
-                      showMsg("已选择功能4");
-                    },
-                  ),
-                ],
+                ),
               ),
-            ),
+              Expanded(
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.25)),
+                    child: const Text(
+                      "主内容区",
+                      style: TextStyle(color: Colors.white, fontSize: 24),
+                    ),
+                  ),
+                ),
+              )
+            ],
           ),
-          // 右侧主内容区域
-           const Expanded(
-             child: Center(
-               child: Text(
-                 "主内容区",
-                 style: TextStyle(color: Colors.white, fontSize: 24),
-               ),
-             ),
-           )
-         ],
-       ),
-     );
-   }
- }
+        ],
+      ),
+    );
+  }
+}

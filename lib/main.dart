@@ -153,7 +153,6 @@ class _HomePageState extends State<HomePage> {
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.black.withOpacity(0.5),
         title: Text(text, style: const TextStyle(color: Colors.white)),
-        title: Text(text, style: const TextStyle(color: Colors.white)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),

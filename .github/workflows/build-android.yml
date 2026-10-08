@@ -1,41 +1,9 @@
-name: Build Flutter APK
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: List current directory files
-        run: ls -la
-
-      - name: Print pubspec content
-        run: cat pubspec.yaml
-
-      - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.7.12'
-
-      - name: Accept Android SDK licenses
-        run: yes | flutter doctor --android-licenses
-
-      - name: Fetch dependencies
-        run: |
-          export PUB_HOSTED_URL=https://pub.flutter-io.cn
-          export FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
-          flutter pub get
-
-      - name: Build release APK
-        run: flutter build apk --release
-
-      - name: Upload built APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+- name: 创建全新Flutter项目并打包
+  run: |
+    flutter create -t app new_app
+    cp -r lib new_app/
+    cp pubspec.yaml new_app/
+    if [ -d assets ]; then cp -r assets new_app/; fi
+    cd new_app
+    flutter pub get
+    flutter build apk --release

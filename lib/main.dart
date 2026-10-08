@@ -1,3 +1,4 @@
+dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// ================= 启动页 =================
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
   @override
@@ -96,7 +98,8 @@ class _SplashPageState extends State<SplashPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black.withOpacity(0.4),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
+                padding: const
+EdgeInsets.symmetric(horizontal: 40, vertical: 18),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                   side: const BorderSide(color: Colors.white, width: 2),
@@ -106,7 +109,8 @@ class _SplashPageState extends State<SplashPage> {
               onPressed: videoReady ? gotoHome : null,
               child: const Text(
                 "进 入",
-                style: TextStyle(fontSize: 22, letterSpacing: 6, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 22,
+letterSpacing: 6, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -115,6 +119,8 @@ class _SplashPageState extends State<SplashPage> {
     );
   }
 }
+
+// ================= 主界面 =================
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -148,6 +154,7 @@ class _HomePageState extends State<HomePage> {
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.black.withOpacity(0.5),
         title: Text(text, style: const TextStyle(color: Colors.white)),
+        title: Text(text, style: const TextStyle(color: Colors.white)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -180,7 +187,8 @@ class _HomePageState extends State<HomePage> {
           }
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+          padding: const
+EdgeInsets.symmetric(vertical: 12, horizontal: 10),
           decoration: BoxDecoration(
             color: isSelected
                 ? Colors.white.withOpacity(0.25)
@@ -296,6 +304,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
   Widget _buildSliderRow(String label, double value) {
     return Row(
       children: [

@@ -126,7 +126,7 @@ class _HomePageState extends State<HomePage> {
   late VideoPlayerController _videoCtrl;
   bool videoReady = false;
   int selectedIndex = 0;
-  bool showAuxWindow = false; 
+  bool showAuxWindow = false;
 
   @override
   void initState() {
@@ -212,141 +212,128 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-Widget _buildAuxiliaryWindow() {
-  return Positioned(
-    right: 100,
-    top: 50,
-    child: Container(
-      width: 280,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white24),
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text("辅助配置", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                GestureDetector(
-                  onTap: () => setState(() => showAuxWindow = false),
-                  child: const Icon(Icons.close, color: Colors.white, size: 18),
-                ),
-              ],
-            ),
-            const Divider(color: Colors.white30),
 
-            const Text("地面目标配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
-            _buildSliderRow("左右偏移 (X)", 0.0),
-            _buildSliderRow("前后偏移 (Y)", 0.0),
-            _buildSliderRow("高度偏移 (Z)", 1.684),
-            _buildSliderRow("水平预判", 0.144),
-            _buildSliderRow("垂直预判", 0.100),
-            _buildSliderRow("平滑系数", 0.500),
-
-            const SizedBox(height: 10),
-            const Text("空中目标配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
-            _buildSliderRow("左右偏移 (X)", 0.0),
-            _buildSliderRow("前后偏移 (Y)", 0.0),
-            _buildSliderRow("高度偏移 (Z)", 1.763),
-            _buildSliderRow("水平预判", 0.144),
-            _buildSliderRow("垂直预判", 0.263),
-            _buildSliderRow("平滑系数", 0.500),
-
-            const SizedBox(height: 10),
-            const Text("通用配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
-            _buildCheckbox("启用平滑", true),
-            _buildCheckbox("持枪时触发", true),
-            _buildCheckbox("过滤队友", true),
-            _buildCheckbox("显示自瞄圈圈", true),
-
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Text("自瞄圈半径:", style: TextStyle(color: Colors.white70, fontSize: 12)),
-                Expanded(
-                  child: Slider(value: 245, min: 0, max: 500, activeColor: Colors.blueAccent, onChanged: (v) {}),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                const Text("最大自瞄距离(米):", style: TextStyle(color: Colors.white70, fontSize: 12)),
-                Expanded(
-                  child: Slider(value: 85, min: 0, max: 200, activeColor: Colors.blueAccent, onChanged: (v) {}),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueGrey.withOpacity(0.8),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+  Widget _buildAuxiliaryWindow() {
+    return Positioned(
+      right: 100,
+      top: 50,
+      child: Container(
+        width: 280,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.6),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white24),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("辅助配置", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  GestureDetector(
+                    onTap: () => setState(() => showAuxWindow = false),
+                    child: const Icon(Icons.close, color: Colors.white, size: 18),
                   ),
-                  child: const Text("保存配置", style: TextStyle(fontSize: 12)),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueGrey.withOpacity(0.8),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                ],
+              ),
+              const Divider(color: Colors.white30),
+              const Text("地面目标配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
+              _buildSliderRow("左右偏移 (X)", 0.0),
+              _buildSliderRow("前后偏移 (Y)", 0.0),
+              _buildSliderRow("高度偏移 (Z)", 1.684),
+              _buildSliderRow("水平预判", 0.144),
+              _buildSliderRow("垂直预判", 0.100),
+              _buildSliderRow("平滑系数", 0.500),
+              const SizedBox(height: 10),
+              const Text("空中目标配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
+              _buildSliderRow("左右偏移 (X)", 0.0),
+              _buildSliderRow("前后偏移 (Y)", 0.0),
+              _buildSliderRow("高度偏移 (Z)", 1.763),
+              _buildSliderRow("水平预判", 0.144),
+              _buildSliderRow("垂直预判", 0.263),
+              _buildSliderRow("平滑系数", 0.500),
+              const SizedBox(height: 10),
+              const Text("通用配置:", style: TextStyle(color: Colors.cyan, fontSize: 12)),
+              _buildCheckbox("启用平滑", true),
+              _buildCheckbox("持枪时触发", true),
+              _buildCheckbox("过滤队友", true),
+              _buildCheckbox("显示自瞄圈圈", true),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Text("自瞄圈半径:", style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  Expanded(child: Slider(value: 245, min: 0, max: 500, activeColor: Colors.blueAccent, onChanged: (v) {})),
+                ],
+              ),
+              Row(
+                children: [
+                  const Text("最大自瞄距离(米):", style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  Expanded(child: Slider(value: 85, min: 0, max: 200, activeColor: Colors.blueAccent, onChanged: (v) {})),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey.withOpacity(0.8), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4)),
+                    child: const Text("保存配置", style: TextStyle(fontSize: 12)),
                   ),
-                  child: const Text("加载配置", style: TextStyle(fontSize: 12)),
-                ),
-              ],
-            ),
-          ],
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey.withOpacity(0.8), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4)),
+                    child: const Text("加载配置", style: TextStyle(fontSize: 12)),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-Widget _buildSliderRow(String label, double value) {
-  return Row(
-    children: [
-      SizedBox(
-        width: 80,
-        child: Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
-      ),
-      Expanded(
-        child: Slider(
-          value: value, min: 0.0, max: 2.0,
-          activeColor: Colors.blueAccent,
-          inactiveColor: Colors.white24,
+    );
+  }
+  Widget _buildSliderRow(String label, double value) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 80,
+          child: Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+        ),
+        Expanded(
+          child: Slider(
+            value: value, min: 0.0, max: 2.0,
+            activeColor: Colors.blueAccent,
+            inactiveColor: Colors.white24,
+            onChanged: (v) {},
+          ),
+        ),
+        SizedBox(
+          width: 30,
+          child: Text(value.toStringAsFixed(3), style: const TextStyle(color: Colors.white, fontSize: 10)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCheckbox(String label, bool value) {
+    return Row(
+      children: [
+        Checkbox(
+          value: value,
           onChanged: (v) {},
+          activeColor: Colors.blueAccent,
+          checkColor: Colors.white,
+          side: const BorderSide(color: Colors.white54),
         ),
-      ),
-      SizedBox(
-        width: 30,
-        child: Text(value.toStringAsFixed(3), style: const TextStyle(color: Colors.white, fontSize: 10)),
-      ),
-    ],
-  );
-}
+        Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
+      ],
+    );
+  }
 
-Widget _buildCheckbox(String label, bool value) {
-  return Row(
-    children: [
-      Checkbox(
-        value: value,
-        onChanged: (v) {},
-        activeColor: Colors.blueAccent,
-        checkColor: Colors.white,
-        side: const BorderSide(color: Colors.white54),
-      ),
-      Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
-    ],
-  );
-}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -410,7 +397,6 @@ Widget _buildCheckbox(String label, bool value) {
               ),
             ],
           ),
-
           if (showAuxWindow) _buildAuxiliaryWindow(),
         ],
       ),

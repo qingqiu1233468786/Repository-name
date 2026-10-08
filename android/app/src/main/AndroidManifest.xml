@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.qingqiu.tool1">
+    package="com.qingqiu.tool"
 
     <!-- ========== 在这里添加权限！ ========== -->
     <!-- 只保留这个权限，别的安装、文件权限全部删掉 -->
